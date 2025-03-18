@@ -13,6 +13,7 @@ export default function MainContent() {
   const url = "https://api.aladhan.com/v1/timingsByCity?country=MA&city=";
   const [age, setAge] = React.useState('');
   const [city, setCity] = useState("Fes");
+  const [gDate, setGDate] = useState('00-00-0000');
   const [timings, setTimings] = useState({
     Fajr: "00:00",
     Dhuhr: "00:00",
@@ -25,6 +26,7 @@ export default function MainContent() {
     async function fetchData() {
       let response = await axios.get(url+city);
       setTimings(response.data.data.timings)
+      setGDate(response.data.data.date.gregorian.date)
       console.log(response)
     }
     fetchData()
@@ -33,14 +35,14 @@ export default function MainContent() {
   const handleChange = (event) => {
     setAge(event.target.value);
   };
+
   return (
     <>
-    <button onClick={() => console.log(timings)}>click</button>
     {/* ***************************** */}
     <Grid container style={{}}>
     <Grid size={{xs: 5}}>
     <div>
-      <h2> سبتمبر 9 2023 | 4:20 </h2>
+      <h2>{gDate}</h2>
       <h1>مكة المكرمة</h1>
     </div>
     </Grid>
