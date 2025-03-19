@@ -13,7 +13,6 @@ export default function Prayer({salatName, salatTime, salatImg}) {
         sx={{ height: 140 }}
         image={salatImg}
         // "fajr.jpg"
-        title="green iguana"
       />
       <CardContent>
         <Typography gutterBottom variant="h5" component="div">
