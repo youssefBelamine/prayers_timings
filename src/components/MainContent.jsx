@@ -14,7 +14,12 @@ export default function MainContent() {
   const [time, setTime] = useState("");
   const [city, setCity] = useState("Fes");
   const [gDate, setGDate] = useState("00-00-0000");
-  const [timer, setTimer] = useState(20);
+  const [nextPrayer, setNextPrayer] = useState("");
+  const [timeLeft, setTimeLeft] = useState({
+    hours: "0",
+    minutes: "0",
+    seconds: "0",
+  })
   const [hijriDate, setHijriDate] = useState({
     date: "",
     day: "",
@@ -33,6 +38,14 @@ export default function MainContent() {
     Isha: "00:00",
   });
 
+  const prayers = {
+    Fajr: "الفجر",
+    Dhuhr: "الظهر",
+    Asr: "العصر",
+    Maghrib: "المغرب",
+    Isha: "العشاء",
+  }
+
   const cities = {
     Casablanca: "الدار البيضاء",
     Rabat: "الرباط",
@@ -46,54 +59,93 @@ export default function MainContent() {
     Essaouira: "الصويرة",
   };
 
-  function getFullDate() {
-    const t = moment();
-    let Date = t.format("YYYY-MM-DD");
-    return Date;
-  }
 
-  const [date, setDate] = useState(getFullDate());
+  const [date, setDate] = useState(moment().format("YYYY-MM-DD"));
 
-  setInterval(() => {
-    const t = moment();
-    let date = t.format("HH:mm")
-    setTime(date);
-  }, 1000);
 
-  function formatDate(dateString) {
-    const [year, month, day] = dateString.split("-");
-    return `${day}-${month}-${year}`;
-}
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTime(moment().format("HH:mm"));
+    }, 1000);
+  
+    return () => clearInterval(interval);
+  }, []);
+  
+
 
   useEffect(() => {
     async function fetchData() {
-      let response = await axios.get("https://api.aladhan.com/v1/timingsByCity/"+formatDate(date)+"?country=MA&city=" + city);
-      console.log("**********https://api.aladhan.com/v1/timingsByCity/"+formatDate(date)+"?country=MA&city=" + city)
-      setTimings(response.data.data.timings);
-      console.log(timings)
-      setGDate(response.data.data.date.gregorian.date);
-      setHijriDate(response.data.data.date.hijri);
+      try {
+        let response = await axios.get(
+          `https://api.aladhan.com/v1/timingsByCity/${moment(date).format("YYYY-MM-DD")}?country=MA&city=${city}`
+        );
+    
+        setTimings(response.data.data.timings);
+        setGDate(response.data.data.date.gregorian.date);
+        setHijriDate(response.data.data.date.hijri);
+      } catch (error) {
+        console.error("Error fetching prayer times:", error);
+      }
     }
+    
     fetchData();
   }, [city, date]);
 
-  // useEffect(() => {
-  //   const interval = setInterval(() => {
-  //     setTimer((timer) => timer - 1);
-  //   }, 1000);
-  //   return () => clearInterval(interval);
-  // }, []);
+  useEffect(() => {
+    const interval = setInterval(() => {
+      countDownTimer()
+      
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [time, timings]);
 
 
-  const x = {
-    date: "18-09-1446",
-    day: "18",
-    month: {
-      en: "Ramaḍān",
-      ar: "رَمَضان",
-    },
-    year: "1446",
-  };
+   const countDownTimer = () => {
+    const now = moment();
+    const fajrMoment = moment(timings.Fajr, "HH:mm");
+    const dhuhrMoment = moment(timings.Dhuhr, "HH:mm");
+    const asrMoment = moment(timings.Asr, "HH:mm");
+    const maghribMoment = moment(timings.Maghrib, "HH:mm");
+    const ishaMoment = moment(timings.Isha, "HH:mm");
+    if (now.isAfter(fajrMoment) && now.isBefore(dhuhrMoment)){
+      setNextPrayer("Dhuhr");
+    }
+    else if (now.isAfter(dhuhrMoment) && now.isBefore(asrMoment)){
+      setNextPrayer("Asr")
+    }
+    else if (now.isAfter(asrMoment) && now.isBefore(maghribMoment)){
+      setNextPrayer("Maghrib")
+    }
+    else if (now.isAfter(maghribMoment) && now.isBefore(ishaMoment)){
+      setNextPrayer("Isha")
+    }
+    else if (now.isAfter(ishaMoment)){
+      setNextPrayer("Fajr")
+    }
+
+
+   }
+    
+   useEffect(()=>{
+    const interval = setInterval(() => {
+    const now = moment();
+    let nextPrayerTime = moment(timings[nextPrayer], "HH:mm");
+    if (nextPrayer == "Fajr"){
+      nextPrayerTime.add(1, "day");
+    }
+    const remainingTime = moment.duration(nextPrayerTime.diff(now));
+    if (!isNaN(remainingTime.hours())){
+      setTimeLeft({
+        hours: remainingTime.hours(),
+        minutes: remainingTime.minutes(),
+        seconds: remainingTime.seconds(),
+    });
+    }
+      
+    }, 1000);
+    return () => clearInterval(interval);
+   }, [time])
+
 
   
   const handleCityChange = (event) => {
@@ -122,8 +174,8 @@ export default function MainContent() {
 
         <Grid size={{ xs: 8, lg: 4 }}>
           <div>
-            <h2> متبقي حتى صلاة الظهر</h2>
-            <h1> 02:32:22 </h1>
+            <h2> متبقي حتى صلاة {prayers[nextPrayer]} </h2>
+            <h1> {`${timeLeft.hours > 9 ? timeLeft.hours : "0"+timeLeft.hours}:${timeLeft.minutes > 9 ? timeLeft.minutes : "0"+timeLeft.minutes}:${timeLeft.seconds > 9 ? timeLeft.seconds : "0"+timeLeft.seconds}`} </h1>
           </div>
         </Grid>
 
@@ -157,7 +209,6 @@ export default function MainContent() {
             </FormControl>
           </Box>
         </Grid>
-        <h1>{timer}</h1>
       </Grid>
       {/* ***************************** */}
 
