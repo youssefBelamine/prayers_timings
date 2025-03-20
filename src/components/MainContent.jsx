@@ -61,10 +61,10 @@ export default function MainContent() {
     if (month < 10) {
       month = "0" + month;
     }
-    return year + "-" + month + "-" + day;
+    return  year+ "-" + month + "-" +day ;
   }
 
-  const [date, setDate] = useState(dayjs(getFullDate()));
+  const [date, setDate] = useState((getFullDate()));
 
   setInterval(() => {
     const d = new Date();
@@ -78,6 +78,10 @@ export default function MainContent() {
     }
     setTime(hour + ":" + minutes);
   }, 1000);
+
+  function requestDate() {
+    
+  }
 
   useEffect(() => {
     async function fetchData() {
@@ -134,7 +138,13 @@ export default function MainContent() {
 
         <Grid size={{ xs: 4, lg: 4 }}>
           <Box sx={{ minWidth: 320 }}>
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
+            <input type="date" name="date" id="date" min="2025-01-01" max="2025-12-31" value={date} onChange={(newValue) => {
+                      setDate(newValue.$y );
+
+                      console.log(newValue);
+                      console.log(date);
+                    }} />
+            {/* <LocalizationProvider dateAdapter={AdapterDayjs}>
               <DemoContainer components={["DateCalendar"]}>
                 <DemoItem label="">
                   <DateCalendar
@@ -152,7 +162,7 @@ export default function MainContent() {
                   />
                 </DemoItem>
               </DemoContainer>
-            </LocalizationProvider>
+            </LocalizationProvider> */}
 
             <FormControl sx={{ m: 2, minWidth: 120 }}>
               <InputLabel id="demo-simple-select-label">المدينة</InputLabel>
