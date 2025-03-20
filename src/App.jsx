@@ -4,7 +4,6 @@ import MainContent from "./components/MainContent";
 import { Container } from "@mui/material";
 
 function App() {
-  const [count, setCount] = useState(0);
 
   return (
     <>
@@ -15,9 +14,7 @@ function App() {
             width: "100vw",
           }}
       >
-        <Container  maxWidth="xl">
           <MainContent />
-        </Container>
       </div>
     </>
   );

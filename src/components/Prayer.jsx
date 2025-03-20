@@ -8,7 +8,7 @@ import Typography from '@mui/material/Typography';
 
 export default function Prayer({salatName, salatTime, salatImg}) {
   return (
-    <Card sx={{ maxWidth: 345 }}>
+    <Card sx={{ maxWidth: 300 }}>
       <CardMedia
         sx={{ height: 140 }}
         image={salatImg}
@@ -18,7 +18,7 @@ export default function Prayer({salatName, salatTime, salatImg}) {
         <Typography gutterBottom variant="h5" component="div">
           {salatName}
         </Typography>
-        <Typography variant="h1" sx={{ color: 'text.secondary' }}>
+        <Typography variant="h2" sx={{ color: 'text.secondary' }}>
           {salatTime}
           </Typography>
       </CardContent>

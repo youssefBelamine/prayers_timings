@@ -8,17 +8,13 @@ import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
 import axios from "axios";
-import dayjs from "dayjs";
-import { DemoContainer, DemoItem } from "@mui/x-date-pickers/internals/demo";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { DateCalendar } from "@mui/x-date-pickers/DateCalendar";
+import moment from "moment";
 
 export default function MainContent() {
-  const url = "https://api.aladhan.com/v1/timingsByCity?country=MA&city=";
   const [time, setTime] = useState("");
   const [city, setCity] = useState("Fes");
   const [gDate, setGDate] = useState("00-00-0000");
+  const [timer, setTimer] = useState(20);
   const [hijriDate, setHijriDate] = useState({
     date: "",
     day: "",
@@ -28,6 +24,7 @@ export default function MainContent() {
     },
     year: "",
   });
+
   const [timings, setTimings] = useState({
     Fajr: "00:00",
     Dhuhr: "00:00",
@@ -50,50 +47,43 @@ export default function MainContent() {
   };
 
   function getFullDate() {
-    const d = new Date();
-    let year = d.getFullYear();
-    let month = d.getMonth();
-    month = month + 1;
-    let day = d.getDate();
-    if (day < 10) {
-      day = "0" + day;
-    }
-    if (month < 10) {
-      month = "0" + month;
-    }
-    return  year+ "-" + month + "-" +day ;
+    const t = moment();
+    let Date = t.format("YYYY-MM-DD");
+    return Date;
   }
 
-  const [date, setDate] = useState((getFullDate()));
+  const [date, setDate] = useState(getFullDate());
 
   setInterval(() => {
-    const d = new Date();
-    let hour = d.getHours();
-    if (hour < 10) {
-      hour = "0" + hour;
-    }
-    let minutes = d.getMinutes();
-    if (minutes < 10) {
-      minutes = "0" + minutes;
-    }
-    setTime(hour + ":" + minutes);
+    const t = moment();
+    let date = t.format("HH:mm")
+    setTime(date);
   }, 1000);
 
-  function requestDate() {
-    
-  }
+  function formatDate(dateString) {
+    const [year, month, day] = dateString.split("-");
+    return `${day}-${month}-${year}`;
+}
 
   useEffect(() => {
     async function fetchData() {
-      let response = await axios.get("https://api.aladhan.com/v1/timingsByCity/"+date+"?country=MA&city=" + city);
-      console.log("https://api.aladhan.com/v1/timingsByCity/"+date+"?country=MA&city=" + city)
+      let response = await axios.get("https://api.aladhan.com/v1/timingsByCity/"+formatDate(date)+"?country=MA&city=" + city);
+      console.log("**********https://api.aladhan.com/v1/timingsByCity/"+formatDate(date)+"?country=MA&city=" + city)
       setTimings(response.data.data.timings);
+      console.log(timings)
       setGDate(response.data.data.date.gregorian.date);
       setHijriDate(response.data.data.date.hijri);
-      console.log(response);
     }
     fetchData();
   }, [city, date]);
+
+  // useEffect(() => {
+  //   const interval = setInterval(() => {
+  //     setTimer((timer) => timer - 1);
+  //   }, 1000);
+  //   return () => clearInterval(interval);
+  // }, []);
+
 
   const x = {
     date: "18-09-1446",
@@ -105,14 +95,15 @@ export default function MainContent() {
     year: "1446",
   };
 
+  
   const handleCityChange = (event) => {
     setCity(event.target.value);
   };
 
   return (
-    <>
+    <div style={{width: "90%",}}>
       {/* ***************************** */}
-      <Grid container style={{}}>
+      <Grid container style={{width: "80%", backgroundColor: "white", margin: "auto", }}>
         <Grid size={{ xs: 12, lg: 4 }}>
           <div style={{ display: "flex", flexWrap: "wrap" }}>
             <h2 style={{ width: "100%" }}>
@@ -138,31 +129,10 @@ export default function MainContent() {
 
         <Grid size={{ xs: 4, lg: 4 }}>
           <Box sx={{ minWidth: 320 }}>
-            <input type="date" name="date" id="date" min="2025-01-01" max="2025-12-31" value={date} onChange={(newValue) => {
-                      setDate(newValue.$y );
-
-                      console.log(newValue);
-                      console.log(date);
+            <input type="date" name="date" id="date" min="2025-01-01" max="2025-12-31" value={date} onChange={(e) => {
+              setDate(e.target.value );
+              console.log(e.target.value)
                     }} />
-            {/* <LocalizationProvider dateAdapter={AdapterDayjs}>
-              <DemoContainer components={["DateCalendar"]}>
-                <DemoItem label="">
-                  <DateCalendar
-                    // value={date}
-                    onChange={(newValue) => {
-                      setDate((newValue.$D > 9 ? newValue.$D : "0" +newValue.$D) +
-                      "-" +
-                      (newValue.$M + 1 > 9 ? newValue.$M + 1 : "0"+(newValue.$M + 1)) +
-                      "-" +
-                      newValue.$y);
-
-                      console.log(newValue);
-                      console.log(date);
-                    }}
-                  />
-                </DemoItem>
-              </DemoContainer>
-            </LocalizationProvider> */}
 
             <FormControl sx={{ m: 2, minWidth: 120 }}>
               <InputLabel id="demo-simple-select-label">المدينة</InputLabel>
@@ -187,6 +157,7 @@ export default function MainContent() {
             </FormControl>
           </Box>
         </Grid>
+        <h1>{timer}</h1>
       </Grid>
       {/* ***************************** */}
 
@@ -216,17 +187,17 @@ export default function MainContent() {
         <Prayer
           salatName="المغرب"
           salatTime={timings.Maghrib}
-          salatImg="sunset.png"
+          salatImg="maghrib.jpg"
         />
         <Prayer
           salatName="العشاء"
           salatTime={timings.Isha}
-          salatImg="fajr.jpg"
+          salatImg="isha.jpg"
         />
       </Stack>
 
       {/* ***************************** */}
-      <Stack></Stack>
-    </>
+      
+    </div>
   );
 }
