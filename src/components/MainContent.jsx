@@ -71,8 +71,6 @@ export default function MainContent() {
     return () => clearInterval(interval);
   }, []);
   
-
-
   useEffect(() => {
     async function fetchData() {
       try {
@@ -84,7 +82,7 @@ export default function MainContent() {
         setGDate(response.data.data.date.gregorian.date);
         setHijriDate(response.data.data.date.hijri);
       } catch (error) {
-        console.error("Error fetching prayer times:", error);
+        console.error("Error fetching prayer times: ", error);
       }
     }
     
